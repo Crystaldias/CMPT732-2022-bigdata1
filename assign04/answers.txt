@@ -1,0 +1,10 @@
+Q1. Reddit ETL code took 11s with cache and 14s without cache. Since the intermediate rdds created were needed to be called twice later for storing positive and negative records, it helps to cache it.
+
+Q2. In Spark, only when actions are called the intermediate rdds in a pipeline are materialized (DAG evaluation). Once the DAG evaluation is completed the intermediate RDDs are cleared from memory. Now if in future, these same intermediate rdds are required, spark would have to map values again. But when such kind of recall of previously created RDDs is not required, caching it would only use up memory and increase the processing time. 
+
+Q3. Broadcast is faster when the broadcasted relation is smaller. In the relative_score example, the smaller <reddit>,<score> pair was a small entity and didn't take up much memory while it was broadcasted to executor.
+    On the cluster reddit-4 took 1m 1s with broadcast and 11m without broadcast. 
+
+Q4. On the other hand if this relation was larger than a threshold value then broadcasting it to each executor would be costly.
+
+
