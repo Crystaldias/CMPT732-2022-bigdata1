@@ -1,0 +1,13 @@
+1. wordcount 5 data is a large file of data, 586 MB. Without repartition the runtime turned out to be 4.39 minutes but after adding 10 partitions the runtime was 2.18 minutes. Splitting the data into partitions made the executor operations work faster on each core.
+
+2. wordcount3 is already well-partitioned and a smaller data as compared to wordcount-5, so adding partitions to it would be expensive and unecessary, as shuffles would be costly. It took 0.25s without partitions and 0.33s with 10 partitions.
+
+3. To further imporve performance on wordcount-5, we could use coalesce() to combine the partitions and reduce shuffle operations. Also, since spark decides on number of partitions based on file size, we could work on the data directly to get a more evenly distributed structure like wordcount-3
+
+4. The runtime for eurler calculations with different number of partitions was follows:
+slice - time
+20 - 22.23,26.01s
+15 - 26.28s
+10 - 22.18s
+5 - 25.74s
+The best results were within 5 to 10 partition range. More than this range, increased shuffle operations making it more time consuming. Fewer than this range made for a single core handle more tasks. (System config- 4 cores)
