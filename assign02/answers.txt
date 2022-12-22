@@ -1,0 +1,19 @@
+Q1. We would need the mapper to map both no_of_views and title of a page. We could write a new class <name> implements Writable to accomodate this data type.
+
+Q2. map() returns one output for every single input, whereas flatMap() returns an arbitary (0 to many) output(s) for an input. (converts a multidimensional array to a one dimentional array). map() in spark would be similar to map in Hadoop, as dimension of output is same dimension of input.
+
+Q3. reduce() takes RDD of objects as inputs wheres reduceByKey() takes RDD of key, valuepairs as input. reduceByKey() performs aggregate functions on keys, whereas reduce() does it on the entire dataset. In this case, reduce in MapReduce is more like reduceByKey as both perform opeations on key,value pairs
+
+Q4. To find the most popular pages at a given hour when views are equal, we could groupByKey on the time stamp, and get all possible popular pages in that hour.
+
+
+Feedback:
+	
+-0.5 : Q2. Both Map and FlatMap generate a single output RDD but with difference lies in how they operate on the individual elements of the input RDD. Mapreduce can also be more like FlatMap if context.write() is called multiple times.
+
+-0.75 : Not clear how would one proceed after GroupByKey. Aggregate titles in a list in case of tie.
+
+
+correction - 
+Q2. write clearly! simple language
+Q4. for equal values on popularity, concat the titles to one list (merge the (key,value)) Eg- mm-dd-yy (168,"crime and punishment","war and peace")
