@@ -1,0 +1,40 @@
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- HashAggregate(keys=[subreddit#18], functions=[avg(score#16L)])
+   +- Exchange hashpartitioning(subreddit#18, 200), ENSURE_REQUIREMENTS, [id=#23]
+      +- HashAggregate(keys=[subreddit#18], functions=[partial_avg(score#16L)])
+         +- FileScan json [score#16L,subreddit#18] Batched: false, DataFilters: [], Format: JSON, Location: InMemoryFileIndex(1 paths)[file:/home/crystal/assign06/reddit-1], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<score:bigint,subreddit:string>
+
+1. From the physical plan we can see that only score and subreddit was loaded, because only these fields were required for the computation of averages. The groupBy() agg() functions here act like a combiner as they collect all similar subreddits and then perform an average on them.
+
+2. 
+MapReduce - 4m8.154s
+
+Spark DataFrames (with CPython) - 2m4s
+
+Spark DataFrames (with PyPy) - 2m2s
+
+Spark RDDs (with CPython) - 2m18s
+
+Spark RDDs (with PyPy) - 1m28s
+
+For dataframes the difference between cpython and pypy was 2s and for RDDs the difference between cpython and pypy was 50s. 
+With cpython-
+DataFrames are faster because their optimization is more sophisticated. 
+They skip through columns - the physical plan showed that only two columns- subreddits and score was in memory but in rdds all fields are on memeory, increasing the execution time. 
+Also, the aggregate functions like sum, average are done locally and then shuffled in case of DataFrames.
+
+With pypy-
+DataFrames are JVM (Scala objects) which need to be converted to python for pypy but Rdds are already serealized python objects and don't need to be converted to python. Therefore, rdds take less time than DataFrames to run with pypy.
+
+
+3. On local for pagecount-1 with broadcast took 12s whereas without broadcast took 15s. Being a smaller dataset the difference wasn't very significant. But for pagecounts-3 data on the cluster it took 1m59s with broadcast and 2m52s without broadcast. Like in the previous assignment, broadcasting the smaller dataframe, made joining the larger dataframe easier at all executors.
+
+
+4.
+The step-
+BroadcastHashJoin [views#2, hour#9], [popular_views#48, popular_hour#51], Inner, BuildRight, false
+from the physical plan when executed with broadcast is missing from the physical plan of without broadcast.
+
+
+5. It was easier to write the code with dataframes+python-methods and the code was more readable too. 
