@@ -1,0 +1,134 @@
+Q1.What is your best guess for the slope and intercept of the streaming points being produced?
+
+The slopes and intercepts for different topics are given as follows:
+
+xy-1
++------------------+-------------------+
+|             slope|          intercept|
++------------------+-------------------+
+|2.7693529486292983|-20.266758139114955|
++------------------+-------------------+
+
+xy-5
++----------------+-------------------+
+|           slope|          intercept|
++----------------+-------------------+
+|2.76545939630377|-20.025002325692085|
++----------------+-------------------+
+
+xy-10
++------------------+------------------+
+|             slope|         intercept|
++------------------+------------------+
+|2.7671178128515286|-20.51840296175967|
++------------------+------------------+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+#####Q2. Is your streaming program's estimate of the slope and intercept getting better as the program runs? 
+(That is: is the program aggregating all of the data from the start of time, or only those that have arrived since the last output?)
+
+Yes, the estimates for the slope and intercept is getting better as the program runs. 
+This program the aggregation and updates are the same for both the slope or intercept for all data from the starting.
+It overwrites the previous data with the new data, therefore in this program the update and complete modes as the same.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Q3. In the colour classification question, what were your validation scores for the RGB and LAB pipelines?
+
+Validation score for RGB model: 0.593566
+Validation score for LAB model: 0.690507
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Q4. When predicting the tmax values, did you over-fit the training data (and for which training/validation sets)?
+
+Yes, the model overfits when we train it on tmax-1 without the "yesterday's temperature" feature. 
+This can be observed from the vast difference between the validation error and testing error. (Table1) 
+Although when we train the same model with same number of features but without tmax-2 a larger dataset we add more variablility to our data, 
+generalizing it and in turn reducing the overfitting. 
+
+-----------Table1-----------
+without yesterday's temperature
+tmax-1 train
+r2 =  0.8772241025934236
+rmse =  4.2084136299350865
+tmax-1 test
+r2 = 0.42562660880790615
+rmse = 9.830358752203063
+
+tmax-2 train
+r2 =  0.836533621892378
+rmse =  5.224267730593115
+tmax-2 test
+r2 = 0.8135721946841843
+rmse = 5.6005097126217205
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Q5. What were your testing scores for your model with and without the “yesterday's temperature” feature?
+
+The testing scores for model without and with "yesterday's temperature" is showing in Table1 and Table2 repectively.
+-----------Table1-----------
+without yesterday's temperature
+tmax-1 train
+r2 =  0.8772241025934236
+rmse =  4.2084136299350865
+tmax-1 test
+r2 = 0.42562660880790615
+rmse = 9.830358752203063
+
+tmax-2 train
+r2 =  0.836533621892378
+rmse =  5.224267730593115
+tmax-2 test
+r2 = 0.8135721946841843
+rmse = 5.6005097126217205
+
+
+-----------Table2-----------
+with yesterday's temperature
+tmax-1 train
+r2 =  0.8547077294853317
+rmse =  4.907739714763245
+tmax-1 test
+r2 = 0.8141798274559126
+rmse = 5.57312505385664
+
+tmax-2 train
+r2 =  0.9144586962868019
+rmse =  3.7688724013820027
+tmax-2 test
+r2 = 0.9130493190562466
+rmse = 3.8123156542918384
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Q6. If you're using a tree-based model, you'll find a .featureImportances property that describes the relative importance of each feature (code commented out in weather_test.py; if not, skip this question). Have a look with and without the “yesterday's temperature” feature: do the results make sense and suggest that your model is making decisions reasonably? With “yesterday's temperature”, is it just predicting “same as yesterday”?
+
+without yesterday's temperature
+tmax-1
+(4,[0,1,2,3],[0.21066107917694704,0.17545722455427756,0.1344142826634959,0.4794674136052794])
+tmax-2
+(4,[0,1,2,3],[0.3519707456434998,0.13282573832840694,0.12590776432219275,0.38929575170590053])
+
+
+with yesterday's temperature
+tmax-1
+(5,[0,1,2,3,4],[0.059636414550047596,0.03607573919747441,0.03829502568822236,0.11140158159886182,0.7545912389653939])
+tmax-2
+(5,[0,1,2,3,4],[0.04001249276161298,0.024380696961658274,0.016705484840613277,0.050051722019031186,0.8688496034170842])
+
+
+We get better results when we use the "yesterday's temperature" feature to fit the model because it takes temperature of two concecutive days.
+So now yesterday's temperature would have some influence in predicting today's temperature. We can see that the weightage for it is ~ 0.86. This explains why tomorrow's temperature is so close to yesterday's.
