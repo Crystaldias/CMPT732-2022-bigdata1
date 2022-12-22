@@ -1,0 +1,149 @@
+ASSIGNMENT-9
+
+
+Q1.
+People from Ontario tend to put larger payment on credit card, because we can see that the average purchase amount with credit card is 131.40 where as for debit it is 101.06
+
+SELECT paymentmethods.mtype, avg(purchases.amount) 
+FROM purchases INNER JOIN customers ON purchases.custid = customers.custid
+INNER JOIN paymentmethods on purchases.pmid = paymentmethods.pmid
+WHERE customers.province = 'ON'
+GROUP BY paymentmethods.mtype
+
+OUTPUT:
+mtype   avg
+
+credit	131.40
+debit	101.06
+
+
+Q2.
+
+a) The third entry, when From_BC_non_Van is FALSE and From_Van in FALSE, that is people who were not from vancouver or BC even
+had the highest amount of purchaces equivalent to average of 112.89 and median of 33.270.
+
+b) CREATE VIEW vancouver_custs AS
+WITH 
+  vprefixes (vp) AS 
+    (SELECT DISTINCT pcprefix FROM greater_vancouver_prefixes)
+SELECT custid,
+              (CASE 
+              WHEN SUBSTRING(customers.postalcode,1,3) IN (SELECT vp FROM vprefixes)
+              THEN 1
+              ELSE 0
+              END) AS in_vancouver
+FROM customers
+
+c) SELECT
+	(CASE
+	 WHEN c.province = 'BC' AND v.in_vancouver = 0
+	 THEN true
+	 ELSE false
+	 END) AS From_BC_non_Van,
+
+	 (CASE
+	 WHEN v.in_vancouver = 1
+	 THEN true
+	 ELSE false
+	 END) AS From_Van,
+
+COUNT(p.amount) AS Count,
+AVG(p.amount) AS Average,
+MEDIAN(p.amount) AS Median
+
+FROM purchases p INNER JOIN customers c ON p.custid = c.custid 
+INNER JOIN vancouver_custs v ON c.custid = v.custid 
+
+GROUP BY From_BC_non_Van, From_Van
+ORDER BY median
+
+
+
+OUTPUT
+
+from_bc_non_van | from_van | count | average | median
+
+false             true	     10384   86.01     27.370
+true              false	     3899    95.16     30.080
+false             false	     15717   112.89    33.270
+
+
+3.
+a) Tourist spent more on Sushi (85.80%) than local residents (77.57%).
+
+b)
+WITH sushi (amenid) AS
+  (SELECT amenid FROM amenities a
+  WHERE a.tags.cuisine IS NOT NULL
+  AND a.amenity = 'restaurant'
+  AND a.tags.cuisine ILIKE '%sushi%')
+SELECT avg(p.amount), v.in_vancouver FROM purchases p
+INNER JOIN vancouver_custs v ON p.custid = v.custid
+INNER JOIN sushi ON sushi.amenid = p.amenid
+GROUP BY v.in_vancouver
+ORDER BY v.in_vancouver
+
+
+OUTPUT
+
+avg  | in_vancouver
+85.80	 0
+77.57	 1
+
+
+4.
+a) Average purchases for the first 5 days of August:
+pdate	    |	avg
+2021-08-01	96.59
+2021-08-02	106.56
+2021-08-03	95.87
+2021-08-04	115.50
+2021-08-05	95.67
+
+b) 
+SELECT pdate, avg(amount) FROM purchases
+WHERE DATE_PART(mon, pdate) = 8 AND DATE_PART(d, pdate) < 6
+GROUP BY pdate
+ORDER BY pdate;
+
+OUTPUT:
+
+pdate	    |	avg
+2021-08-01	96.59
+2021-08-02	106.56
+2021-08-03	95.87
+2021-08-04	115.50
+2021-08-05	95.67
+
+
+c) The bytes / record ratio for Redshift on the 5-day query is 94.06KB / 4703 rows that is 20.
+
+d) The bytes / record ratio for Redshift on the 5-day query is 267396B / 4703 rows that is 56.85. But after spectrum processes this data only 120 bytes and 5 rows are returned.
+
+external_table_name 			 | s3_scanned_bytes | s3_scanned_rows | avg_request_parallelism | max_request_parallelism
+S3 Subquery dev_s3ext_purchases	 	   267396	      4703		1.5			  5
+
+
+e) For the purchases dataset, the averages are 57 bytes/line and 968 lines/day.
+
+Redshift scans the table for the first 5 days of August, so about 4840 (exact = 4703) lines (5*968). 
+And 94.06KB of total data is read from these 4703 rows by reading only the columns that are required for the execution of the query.
+
+While Spectrum reads same number of rows (4703) from S3, it scans the entire row including all columns, therefore the s3_scanned_bytes are equal to 
+267.396KB. But eventually it performs filtering and grouping and returns only 120 bytes and 5 rows to redshift.
+
+f)
+When the data is highly relational and normalized, it could be loaded to redshift without querying for complex joins and aggregations. 
+The added benifit of using redshift would be that, it uses columnar Massive Parallel Processing. 
+This facilitates data redistribution to compute nodes and slices which would eventually improve analytical tasks performed on large datasets.
+The larger datasets could also be split into files, compressed and distribution keys could be assigned for the purpose of parallel processing.
+
+g)
+For structred and semi-structured data in data lakes like S3 it is prefered to use spectrum. 
+This is because data can be loaded from S3 without having to load the data into Amazon Redshift tables. 
+Redshift spectrum uses massive parallelism to run very fast against large datasets. Most of the data remains in S3 
+while the processing occurs in the Redshift spectrum layer. And without the need to make copies of our dataset in S3 
+multiple clusters with different functionality can make use of the same dataset in S3.
+
+
+
