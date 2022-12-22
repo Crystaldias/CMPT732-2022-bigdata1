@@ -1,0 +1,32 @@
+amenities: Open Street Map data showing the locations and attributes of amenities within the greater Vancouver area. For our purposes, an amenity is a place where a customer might spend money (actual data, publicly available).
+
+customers: Customers located across the Canadian provinces and territories (synthetic data).
+
+greater_vancouver_prefixes: For each municipality in the Greater Vancouver area, the three-letter postal code prefixes for addresses in that municipality. Note that some prefixes apply to multiple municipalities (actual data, publicly available).
+
+paymentmethods: Credit and debit card data (synthetic data).
+
+purchases: Purchases by customers at Vancouver amenities using a payment method (synthetic data).
+
+How many customers, purchases, payment methods, and amenities are there?
+select count(*) from customers;
+
+
+What are the types of amenities (amenity)?
+select distinct Type from amenities;
+
+What is the range of the purchase dates?
+select min(date), max(date) from purchases;
+
+What are the types (mtype) of payment methods?
+select distinct mtype from paymentmethods;
+
+How many customers are there from each province and territory?
+select count(custormer) from customers group by province
+select count(custormer) from customers group by territory
+
+
+What are the average and median purchase amounts?
+
+
+What's in greater_vancouver_prefixes?
