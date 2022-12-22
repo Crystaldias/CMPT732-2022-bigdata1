@@ -1,0 +1,70 @@
+
+1.What happened when you inserted another row with the same primary key as an existing row?
+ 
+On inserting another row with a primary key that has been used before in the table, 
+the incoming row overwrites the one already there. This is known as upsert. 
+Therefore instead of adding a new row, this query would only update the existing row with the matching primary key.
+cqlsh:cda78> SELECT * FROM test ;
+
+ id | data
+----+-----------
+  1 |   initial
+  2 | secondary
+  3 |  tertiary
+
+(3 rows)
+cqlsh:cda78> INSERT INTO test (id, data) VALUES (2, 'double');
+cqlsh:cda78> SELECT * FROM test ;
+
+ id | data
+----+----------
+  1 |  initial
+  2 |   double
+  3 | tertiary
+
+
+2. What happened when you query a keyspace with replication factor 1 and one node down? How did it behave with replication factor 2 and a node down? 
+ERROR:
+NoHostAvailable: ('Unable to complete the operation against any hosts', {})
+This occured because the replication factor was 1 meaning only one copy of each record existed on the cluster. 
+No updates could be made when the node carrying the record node was down. But when the replication factor was 2, even though the cluster was down, 
+the update to the record was possible, because we had 2 copies of each record on our cluster. 
+
+
+3. How did the consistency level affect the results with the node up/down?
+
+When the node was down:
+When the consistency level was 1, the operations were successfully executed as we only needed one node to respond. 
+But when consistency was ALL the operations required all nodes with that record to respond. Therefore the records saved on the node that is down, could not be accessed.
+When all nodes were up, there was no issue.
+
+
+4. Which of the WHERE id=? values returned successfully with CONSISTENCY ALL when one of the nodes was down? Why do you think some could be returned but not others? 
+
+For me where id =, id 1 and 2 got returned, but id 3, 4, 5 didn't get returned. Since the replication factor is 2, 
+we can infer that the two copies of the rows were saved on the cluser.
+Therefore, when consistancy was ALL, the rows that that got returned were saved on 2 live nodes, while the other rows weren't fetched because 
+their copies were stored on the node that is down.
+When consistancy is ALL, all copies of the rows should be on live nodes.
+
+5. What was the CREATE TABLE statement you used for the nasalogs table? What was the primary key you choose, and why?
+
+cqlsh:cda78> CREATE TABLE nasalogs (
+         ...   host TEXT,
+         ...   datetime TIMESTAMP,
+         ...   path TEXT,
+         ...   bytes INT,
+         ...   id UUID,
+         ...   PRIMARY KEY (host, id)
+         ... );
+
+The primary key was (host, id). The id is the UUID generated which would be unique for all records. Therefore, this set is unique, which is a requirement for a partition key.
+With a compound key, the first component will be used to determine which node the record will be stored by. 
+In this case, records with the same value for "host" will be on the same node.
+
+
+6. What was the CQL query you used (or tried) to get the total number of bytes?
+
+cqlsh:cda78>
+cqlsh:cda78> SELECT sum(bytes) FROM nasalogs;
+ReadTimeout: Error from server: code=1200 [Coordinator node timed out waiting for replica nodes' responses] message="Operation timed out - received only 0 responses." info={'consistency': 'ONE', 'required_responses': 1, 'received_responses': 0}
