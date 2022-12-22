@@ -1,0 +1,37 @@
+Assignment 1
+======================================================================================================================================================================================
+Q1. No doubts anymore!  
+
+Q2. The reduce shuffle bytes increases when reduce task is 3 as compared to when reduce task was 1, indicating increase in traffic over cluster. 
+Incase of large datasets increased reduces would allow parallel processing resulting in easy and efficient computaion of a job.
+When reduces = 1: Reduce shuffle bytes=428179
+When reduces = 3: Reduce shuffle bytes=621747
+
+Q3. When reduces were 0, no reduce operation took place, and data went only through a mapper (map only job). Therefore we didn't see any input output reducer records.
+
+        Map-Reduce Framework
+                Map input records=40090
+                Map output records=360150
+                Input split bytes=415
+                Spilled Records=0
+                Failed Shuffles=0
+                Merged Map outputs=0
+                GC time elapsed (ms)=55
+                CPU time spent (ms)=6640
+                Physical memory (bytes) snapshot=814444544
+                Virtual memory (bytes) snapshot=6944452608
+                Total committed heap usage (bytes)=1258291200
+                Peak Map Physical memory (bytes)=279728128
+                Peak Map Virtual memory (bytes)=2319749120
+
+Q4. The Runtime for combiner+reducer was less than only reducer but by a insignificant amount. This would change in case of larger datasets. Combiners would help in reducing congestion at the cluster by doing a part of the work for the reducers. 
+
+only Reducer:
+Total time spent by all reduce tasks (ms)=2871
+Reduce input records=9146
+
+combiner+Reducer
+Total time spent by all reduce tasks (ms)=2868
+Combine input records=9146
+Reduce input records=44 only!!!!
+======================================================================================================================================================================================
